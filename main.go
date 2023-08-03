@@ -1,8 +1,82 @@
+package main
+
 import (
 	"fmt"
 	"strconv"
 	"strings"
 )
+
+func main() {
+	x := GetNumber("9")
+	y := GetNumber("9")
+	
+	c1 := x.Check("x")
+	
+	c2 := y.Check("y")
+	
+	if !c1 || !c2 { return }
+	
+	if !EqualType(x, y){
+		fmt.Println("error: x and y are not same type")
+	}else{
+		if (x.roman == ""){
+			fmt.Println(x.value + y.value)
+		}else{
+			fmt.Println(integerToRoman(x.value + y.value))
+		}		
+	}	
+}
+
+type Number struct{
+	value int
+	error error
+	roman string
+}
+
+func (n *Number) Check(s string) bool{
+	c1 := !n.noTrash()
+	var c2 bool
+	
+	if c1 { 
+		fmt.Println(fmt.Sprintf("error: %s - trash", s))
+		return false
+	}else{
+		c2 = !n.InBounds()
+		if c2 {
+			fmt.Println(fmt.Sprintf("error: %s - out of bounds", s)) 
+			return false
+		}
+	}
+	return true
+}
+
+func (n *Number) noTrash() bool{
+	return n.error == nil || n.roman != ""
+}
+
+func (n *Number) InBounds() bool{
+	return n.value < 10 && n.value > 0
+}
+
+func EqualType(x Number, y Number) bool{
+	return (x.roman == "" && y.roman == "") || (x.roman != "" && y.roman != "")
+}
+
+func GetNumber(s string) Number{
+	a, e1 := strconv.Atoi(s)
+	
+	if e1 != nil{
+		x, e2 := GetRoman(s)
+		
+		if e2 == true{
+			return Number{x, e1, s}
+		}else{
+			return Number{0, e1, ""}
+		}
+	}else{
+		return Number{a, e1, ""}
+	}	
+}
 
 func integerToRoman(number int) string {
 	maxRomanNumber := 3999
@@ -37,26 +111,10 @@ func integerToRoman(number int) string {
 	return roman.String()
 }
 
-package main
-
-import (
-	"fmt"
-)
-
-func main() {
-	x, e := GetRoman("MMMCDXXXLVIII")
-	
-	if e == true{
-		fmt.Println(x)
-	}else{
-		fmt.Println("error!")
-	}
-}
-
 func isClearRoman(s string) bool{
-	for _, r := range s	{
+	for _, r := range s	{			
 		if (r == 'I' || // 3 :    1
-			r == 'V' || // 1 :    5 
+			r == 'V' || // 1 :    5
 			r == 'X' || // 3 :   10
 			r == 'L' || // 1 :   50
 			r == 'C' || // 3 :  100
@@ -99,7 +157,7 @@ func GetRoman(s string) (int, bool){
 	for i := len(s) - 1; i >= 0; i-- {
 		switch(s[i]){
 			case 'I':
-				if I.end || I.count == 3 || (V.end && I.count == 1) || (X.count > 1) || (V.start && X.start){
+				if I.end || I.count == 3 || (V.end && I.count == 1) || (X.count > 1) || (V.start && X.start) || M.start || D.start || C.start || L.start{
 					return 0, false
 				}
 				I.start = true
@@ -123,7 +181,7 @@ func GetRoman(s string) (int, bool){
 				}
 				
 			case 'V':
-				if V.end || V.count == 1 || X.start {
+				if V.end || V.count == 1 || X.start || M.start || D.start || C.start || L.start{
 					return 0, false
 				}
 				V.start = true
@@ -134,7 +192,7 @@ func GetRoman(s string) (int, bool){
 					I.end = true
 				}
 			case 'X':
-				if X.end || X.count == 3{
+				if X.end || X.count == 3 || (L.start && X.count == 1) || M.start || D.start || C.start{
 					return 0, false
 				}
 				X.start = true
@@ -157,7 +215,7 @@ func GetRoman(s string) (int, bool){
 				}
 				
 			case 'L':
-				if L.end || L.count == 1 {
+				if L.end || L.count == 1 || C.start || M.start || D.start || C.start{
 					return 0, false
 				}
 				L.start = true
@@ -174,7 +232,7 @@ func GetRoman(s string) (int, bool){
 					X.end = true
 				}
 			case 'C':
-				if C.end || C.count == 3{
+				if C.end || C.count == 3 || (D.start && C.count == 1){
 					return 0, false
 				}
 				C.start = true
@@ -197,7 +255,7 @@ func GetRoman(s string) (int, bool){
 				}
 					
 			case 'D':
-				if D.end || D.count == 1 {
+				if D.end || D.count == 1 || M.start{
 					return 0, false
 				}
 				D.start = true
@@ -232,15 +290,14 @@ func GetRoman(s string) (int, bool){
 					M.flex = false
 				}
 			}
-		
+		/*
 		fmt.Println(i, z, ", I:{", I.count, I.start, I.end,
 		"}, V:{", V.count, V.start, V.end,
 		"}, X:{", X.count, X.start, X.end,
 		"}, L:{", L.count, L.start, L.end,
 		"}, C:{", C.count, C.start, C.end,
 		"}, D:{", D.count, D.start, D.end,
-		"}")
+		"}")*/
 	}
-	return z, true
-	
+	return z, true	
 }
